@@ -1,13 +1,16 @@
 from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
-                           InlineKeyboardMarkup, InlineKeyboardButton)
+                           InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery)
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-main = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='10А', callback_data ='tenA')],
-    [InlineKeyboardButton(text='11Б', callback_data = 'elevenB')]
-])
 
+classes = ['10А', '11Б']
 weekdays = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница']
+
+async def inline_classes():
+    keyboard = InlineKeyboardBuilder()
+    for class_name in classes:
+        keyboard.add(InlineKeyboardButton(text=class_name, callback_data=f'class_{class_name}'))
+    return keyboard.as_markup()
 
 async def inline_weekdays():
     keyboard = InlineKeyboardBuilder()
