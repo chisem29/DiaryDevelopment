@@ -10,6 +10,4 @@ def getBasicLessonsData() :
 
     data.drop(0, inplace=True)
 
-    data.head()
-
     return data
