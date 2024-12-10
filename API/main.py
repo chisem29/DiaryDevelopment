@@ -7,3 +7,5 @@ def getBasicLessonsData() :
     basicColumns = data.columns.tolist()[1::8]
 
     data.columns =  [data.columns.tolist()[0]] + [col for _ in range(8) for col in basicColumns]
+
+    return data
