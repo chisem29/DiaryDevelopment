@@ -16,4 +16,4 @@ def getBasicLessonsData() :
 
 def getLessonsDataByClassWeekday(data : pd.DataFrame, className : str, weekday : str) :
 
-    return data.loc[className, [(weekday, n) for n in range(1, 9)]].dropna().to_dict()
+    return data.loc[className, [(weekday, n) for n in range(1, 9)]].dropna().str.split('\n').apply(pd.Series).rename(columns={0 : 'Предмет', 1 : 'Кабинет'}).values
