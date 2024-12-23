@@ -2,7 +2,7 @@ import pandas as pd
 
 def getBasicLessonsData() :
 
-    data = pd.read_excel('./API\data\ШК2_расписание_дети с 25.11.2024.xlsx')
+    data = pd.read_excel('data/data.xlsx')
 
     basicColumns = data.columns.tolist()[1::8]
 
@@ -10,4 +10,7 @@ def getBasicLessonsData() :
 
     data.drop(0, inplace=True)
 
+    data.set_index('Класс', inplace=True)
+
     return data
+
