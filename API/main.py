@@ -14,3 +14,6 @@ def getBasicLessonsData() :
 
     return data
 
+def getLessonsDataByClassWeekday(data : pd.DataFrame, className : str, weekday : str) :
+
+    return data.loc[className, [(weekday, n) for n in range(1, 9)]].dropna().to_dict()
