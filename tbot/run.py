@@ -1,13 +1,20 @@
 import asyncio
+from aiogram import Bot, Dispatcher, Router
 import logging #замедляет бота использовать токо для дебагинга когда выпускаем удаляем
 
-from aiogram import Bot, Dispatcher
+import sys
+sys.path.append('API')
 
 from config import TOKEN
-from app.handlers import router
+
+from app.handlers import Routing
+from tableData import DATA
 
 bot = Bot(token = TOKEN)
 dp = Dispatcher()
+router = Router()
+
+Routing(router, DATA)
 
 async def main():
     dp.include_router(router)
