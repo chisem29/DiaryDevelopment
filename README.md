@@ -7,4 +7,7 @@
 
 Речь идет об исходных данных расписания по дням недели/классам/номеру урока. В соответствии с этим, таблица будет представлена в виде обьектов вида **(weekday, class, number, name)**, где **weekday** - день недели, **class** - название класса, **number** - номер урока и **name** - название урока.
 
+<<<<<<< HEAD
 https://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@github.com/chisem29/DiaryDevelopment.git
+=======
+>>>>>>> 3e4e82a3ce740dd600dd435adfd5f1e3f2de48c6

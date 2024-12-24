@@ -1,6 +1,6 @@
 
-from aiogram import F, Router
-from aiogram.filters import CommandStart, Command
+from aiogram import Router
+from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 
 import app.keyboards as kb
@@ -18,7 +18,7 @@ data_dict = {
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     classes_keyboard = await kb.inline_classes()
-    await message.answer(f'Привет!\nтвой ID: {message.from_user.id}\nИмя: {message.from_user.first_name}\nвыбери класс', reply_markup=classes_keyboard)
+    await message.answer(f'Привет, {message.from_user.first_name}. \n Выбери класс из перечня!', reply_markup=classes_keyboard)
 
 @router.callback_query(lambda c: c.data.startswith('class_'))
 async def process_class_selection(callback_query: CallbackQuery):
