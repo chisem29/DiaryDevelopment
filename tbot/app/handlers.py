@@ -34,3 +34,4 @@ async def process_weekday_selection(callback_query: CallbackQuery):
     selected_weekday = callback_query.data.split('_')[1]
     data_for_day = data_dict.get(selected_weekday, "Нет данных")
     await callback_query.message.answer(data_for_day)
+    
