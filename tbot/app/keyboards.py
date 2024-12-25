@@ -1,5 +1,4 @@
 from aiogram.types import InlineKeyboardButton
-from aiogram import Bot
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 import numpy as np
 

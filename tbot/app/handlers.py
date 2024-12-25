@@ -55,7 +55,7 @@ def setup_handlers(router: Router, data):
         try :
             selected_data = GLDBCW(data, f'{class_number}{class_char}', weekday)
             await callback_query.message.answer('Вот ваше расписание ')
-            await callback_query.message.answer('\n'.join([f'{row[0]}, {row[1]}'.capitalize() for row in selected_data]))
+            await callback_query.message.answer('\n'.join([f'{i+1}) {row[0].capitalize()}, {row[1]}' for i, row in enumerate(selected_data)]))
         except KeyError :
             await callback_query.message.answer('Ой! Не указаны все данные.')
 
