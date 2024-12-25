@@ -12,7 +12,7 @@ def setup_handlers(router: Router, data):
     @router.message()
     async def cmd_start(message: Message):
         classes_number_keyboard = await kb.inline_number_classes()
-        await message.answer("Привет! Выберите класс:", reply_markup=classes_number_keyboard)
+        await message.answer(f"Привет, {message.from_user.first_name}! Выберите класс:", reply_markup=classes_number_keyboard)
 
     @router.callback_query(lambda c: c.data.startswith('class_number_'))
     async def process_class_number_selection(callback_query: CallbackQuery, state: FSMContext):
@@ -23,7 +23,7 @@ def setup_handlers(router: Router, data):
         
         class_char_keyboard = await kb.inline_char_classes(selected_class_number)
         await callback_query.message.answer(
-            f"Вы выбрали класс: {selected_class_number}. Выберите букву класса:", 
+            f"Вы выбрали номер класса: {selected_class_number}. Выберите букву класса:", 
             reply_markup=class_char_keyboard
         )
         await state.set_state(Form.select_class_char)
@@ -37,7 +37,7 @@ def setup_handlers(router: Router, data):
 
         weekdays_keyboard = await kb.inline_weekdays()
         await callback_query.message.answer(
-            f"Вы выбрали класс: {selected_class_char.upper()}. Выберите день недели:", 
+            f"Вы выбрали букву класса: {selected_class_char.upper()}. Выберите день недели:", 
             reply_markup=weekdays_keyboard
         )
         await state.set_state(Form.select_weekday)
@@ -59,3 +59,5 @@ def setup_handlers(router: Router, data):
         await callback_query.message.answer('\n'.join([f'{row[0]}, {row[1]}'.capitalize() for row in selected_data]))
 
         await state.storage.close()
+
+        

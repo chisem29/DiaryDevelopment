@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardButton
+from aiogram import Bot
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 import numpy as np
 
@@ -20,9 +21,8 @@ class Keyboard:
             keyboard.add(InlineKeyboardButton(text=class_number, callback_data=f'class_number_{class_number}'))
         return keyboard.adjust(2).as_markup()
 
-    async def inline_char_classes(self, selected_number):
+    async def inline_char_classes(self, selected_number : str):
         keyboard = InlineKeyboardBuilder()
-        print(selected_number)
         for class_char in self.classes_chars:
             if f'{selected_number}{class_char}' in self.classes :
                 keyboard.add(InlineKeyboardButton(text=class_char.upper(), callback_data=f'class_char_{class_char}'))

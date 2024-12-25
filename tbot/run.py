@@ -15,7 +15,7 @@ bot = Bot(token = TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 router = Router()
 
-setup_handlers(router, DATA)
+setup_handlers(router, DATA, bot)
 
 async def main():
     dp.include_router(router)
