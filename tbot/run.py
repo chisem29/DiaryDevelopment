@@ -1,5 +1,6 @@
 import asyncio
 from aiogram import Bot, Dispatcher, Router
+from aiogram.fsm.storage.memory import MemoryStorage
 import logging #замедляет бота использовать токо для дебагинга когда выпускаем удаляем
 
 import sys
@@ -7,14 +8,14 @@ sys.path.append('API')
 
 from config import TOKEN
 
-from app.handlers import Routing
+from app.handlers import setup_handlers
 from tableData import DATA
 
 bot = Bot(token = TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
 router = Router()
 
-Routing(router, DATA)
+setup_handlers(router, DATA)
 
 async def main():
     dp.include_router(router)
