@@ -17,7 +17,6 @@ def setup_handlers(router: Router, data):
     @router.callback_query(lambda c: c.data.startswith('class_number_'))
     async def process_class_number_selection(callback_query: CallbackQuery, state: FSMContext):
         selected_class_number = callback_query.data.split('_')[2]
-        await callback_query.answer()
 
         await state.update_data(selected_class_number=selected_class_number)
         
@@ -31,7 +30,6 @@ def setup_handlers(router: Router, data):
     @router.callback_query(lambda c: c.data.startswith('class_char_'))
     async def process_class_char_selection(callback_query: CallbackQuery, state: FSMContext):
         selected_class_char = callback_query.data.split('_')[2]
-        await callback_query.answer()
 
         await state.update_data(selected_class_char=selected_class_char)
 
@@ -54,9 +52,12 @@ def setup_handlers(router: Router, data):
         class_char = user_data.get('selected_class_char')
         weekday = user_data.get('selected_weekday')
 
-        selected_data = GLDBCW(data, f'{class_number}{class_char}', weekday)
-        await callback_query.message.answer('Вот ваше расписание ')
-        await callback_query.message.answer('\n'.join([f'{row[0]}, {row[1]}'.capitalize() for row in selected_data]))
+        try :
+            selected_data = GLDBCW(data, f'{class_number}{class_char}', weekday)
+            await callback_query.message.answer('Вот ваше расписание ')
+            await callback_query.message.answer('\n'.join([f'{row[0]}, {row[1]}'.capitalize() for row in selected_data]))
+        except KeyError :
+            await callback_query.message.answer('Ой! Не указаны все данные.')
 
         await state.storage.close()
 
