@@ -3,3 +3,4 @@ numpy==1.26.4
 pandas==1.4.4
 asyncio==1.26.4
 aiogram==3.16.0
+openpyxl
