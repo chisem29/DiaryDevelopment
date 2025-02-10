@@ -7,7 +7,7 @@ sys.path.append('API')
 
 from config import TOKEN
 
-from app.handlers import setup_handlers
+from app.handlers import setup_handlers 
 from tableData import DATA
 
 bot = Bot(token = TOKEN)

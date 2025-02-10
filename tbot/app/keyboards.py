@@ -32,3 +32,10 @@ class Keyboard:
         for weekday in self.weekdays:
             keyboard.add(InlineKeyboardButton(text=weekday, callback_data=f'weekday_{weekday}'))
         return keyboard.adjust(2).as_markup()
+
+    # Новый метод для добавления кнопки /start
+    async def start_button(self):
+        keyboard = InlineKeyboardBuilder()
+        button = InlineKeyboardButton(text="Начать", callback_data="start_button")  # Кнопка для начала
+        keyboard.add(button)
+        return keyboard.as_markup()
