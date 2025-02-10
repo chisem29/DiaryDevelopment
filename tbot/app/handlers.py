@@ -3,13 +3,14 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from app.keyboards import Keyboard
 from app.states import Form
+from aiogram.filters import Command
 
 from getLessonsDataByClassWeekday import getLessonsDataByClassWeekday as GLDBCW
 
 def setup_handlers(router: Router, data):
     kb = Keyboard(data)
 
-    @router.message()
+    @router.message(Command('start'))
     async def cmd_start(message: Message):
         classes_number_keyboard = await kb.inline_number_classes()
         await message.answer(f"Привет, {message.from_user.first_name}! Выберите класс:", reply_markup=classes_number_keyboard)
