@@ -55,16 +55,28 @@ def setup_handlers(router: Router, data):
         await state.update_data(selected_weekday=selected_weekday)
         
         user_data = await state.get_data()
-        
         class_number = user_data.get('selected_class_number')
         class_char = user_data.get('selected_class_char')
         weekday = user_data.get('selected_weekday')
 
-        try:
-            selected_data = GLDBCW(data, f'{class_number}{class_char}', weekday)
-            await callback_query.message.answer('Вот ваше расписание:')
-            await callback_query.message.answer('\n'.join([f'{i+1}) {row[0].capitalize()}, {row[1]}' for i, row in enumerate(selected_data)]))
-        except KeyError:
+        if class_number and class_char and weekday:
+            try:
+                selected_data = GLDBCW(data, f'{class_number}{class_char}', weekday)
+                
+                if selected_data:
+                    formatted_schedule = "🎓 **Ваше расписание** на **" + weekday.capitalize() + "**:\n\n"
+
+                    for i, row in enumerate(selected_data):
+                        formatted_schedule += f"**{i+1}.** _{row[0].capitalize()}_ — **{row[1]}**\n"
+
+                    await callback_query.message.answer(formatted_schedule)
+                else:
+                    await callback_query.message.answer('В этот день нет уроков.')
+
+            except KeyError:
+                await callback_query.message.answer('Ой! Произошла ошибка при получении данных.')
+        else:
             await callback_query.message.answer('Ой! Не указаны все данные.')
 
         await state.storage.close()
+
