@@ -1,10 +1,6 @@
 import asyncio
 from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.storage.memory import MemoryStorage
-import numpy
-import pandas
-import aiogram
-print(numpy.__version__, pandas.__version__, aiogram.__version__)
 
 import sys
 sys.path.append('API')
