@@ -10,7 +10,6 @@ def create_db():
             class_char TEXT
         )
     ''')
-    print(conn)
     conn.commit()
     conn.close()
 

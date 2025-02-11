@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router 
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
@@ -18,25 +18,13 @@ def setup_handlers(router: Router, data):
     async def cmd_start(message: Message, state: FSMContext):
         try:
             user_data = get_user_data(message.from_user.id)
-            
-            # Проверка данных в FSM
             state_data = await state.get_data()
             
             if user_data:
                 class_number, class_char = user_data
                 weekdays_keyboard = await kb.inline_weekdays()
                 await message.answer(
-                    f"👋 Привет, вы уже выбрали класс: {class_number} {class_char}. Пожалуйста, выберите день недели:",
-                    reply_markup=weekdays_keyboard
-                )
-                await state.set_state(Form.select_weekday)
-            elif state_data.get('selected_class_number') and state_data.get('selected_class_char'):
-                # Если данные есть в FSM, используем их
-                class_number = state_data.get('selected_class_number')
-                class_char = state_data.get('selected_class_char')
-                weekdays_keyboard = await kb.inline_weekdays()
-                await message.answer(
-                    f"👋 Привет, вы уже выбрали класс: {class_number} {class_char}. Пожалуйста, выберите день недели:",
+                    f"👋 Привет, вы уже выбрали класс: {class_number}{class_char.upper()}. Пожалуйста, выберите день недели:",
                     reply_markup=weekdays_keyboard
                 )
                 await state.set_state(Form.select_weekday)
@@ -47,38 +35,29 @@ def setup_handlers(router: Router, data):
                     reply_markup=start_keyboard
                 )
         except Exception as e:
-            await message.answer(f"⚠️ Ошибка при обработке команды: {str(e)}")
+            await message.answer(f"⚠️ Ошибка при обработке команды! ")
 
     @router.message(Command('class'))
     async def cmd_class(message: Message, state: FSMContext):
         try:
-            user_data = get_user_data(message.from_user.id)
-            
-            if user_data:
-                class_number, class_char = user_data
-                await message.answer(
-                    f"👋 Привет, вы уже выбрали класс: {class_number} {class_char}. Если вы хотите изменить класс, "
-                    "используйте команду /reset для сброса настроек.",
-                )
-            else:
-                classes_number_keyboard = await kb.inline_number_classes()
-                await message.answer(
-                    "🔢 Пожалуйста, выберите класс из списка ниже:", 
-                    reply_markup=classes_number_keyboard
-                )
+            class_number, class_char = get_user_data(message.from_user.id)
+            await message.answer(
+                f"Ваш класс {class_number}{class_char.upper()}"
+            )
         except Exception as e:
-            await message.answer(f"⚠️ Ошибка при обработке команды: {str(e)}")
+            await message.answer(f"⚠️ Извините, но вы еще не ввели данные по классу")
 
     @router.message(Command('reset'))
     async def cmd_reset(message: Message, state: FSMContext):
         try:
+            await state.clear()
             delete_user_data(message.from_user.id)
             await message.answer(
                 "🔄 Ваши данные были сброшены. Пожалуйста, выберите класс снова.",
                 reply_markup=await kb.inline_number_classes()
             )
         except Exception as e:
-            await message.answer(f"⚠️ Ошибка при сбросе данных: {str(e)}")
+            await message.answer(f"⚠️ Ошибка при сбросе данных!")
 
     @router.callback_query(lambda c: c.data == "start_button")
     async def on_start_button_click(callback_query: CallbackQuery, state: FSMContext):
@@ -89,7 +68,7 @@ def setup_handlers(router: Router, data):
                 reply_markup=classes_number_keyboard
             )
         except Exception as e:
-            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса: {str(e)}")
+            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса!")
 
     @router.callback_query(lambda c: c.data.startswith('class_number_'))
     async def process_class_number_selection(callback_query: CallbackQuery, state: FSMContext):
@@ -103,7 +82,7 @@ def setup_handlers(router: Router, data):
             )
             await state.set_state(Form.select_class_char)
         except Exception as e:
-            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса: {str(e)}")
+            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса!")
 
     @router.callback_query(lambda c: c.data.startswith('class_char_'))
     async def process_class_char_selection(callback_query: CallbackQuery, state: FSMContext):
@@ -113,8 +92,9 @@ def setup_handlers(router: Router, data):
 
             user_data = await state.get_data()
             class_number = user_data.get('selected_class_number')
-
             save_user_data(callback_query.from_user.id, class_number, selected_class_char)
+
+            await state.clear()
 
             weekdays_keyboard = await kb.inline_weekdays()
             await callback_query.message.answer(
@@ -123,7 +103,7 @@ def setup_handlers(router: Router, data):
             )
             await state.set_state(Form.select_weekday)
         except Exception as e:
-            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса: {str(e)}")
+            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса: Нет такого класса!")
 
     @router.callback_query(lambda c: c.data.startswith('weekday_'))
     async def process_weekday_selection(callback_query: CallbackQuery, state: FSMContext):
@@ -138,7 +118,7 @@ def setup_handlers(router: Router, data):
             class_number, class_char = user_data
 
             weekday = state_data.get('selected_weekday')
-            # Если данных нет, сообщаем пользователю
+
             if not class_number or not class_char or not weekday:
                 await callback_query.message.answer(
                     "⚠️ Ой! Пожалуйста, сначала выберите класс и букву класса.",
@@ -160,11 +140,11 @@ def setup_handlers(router: Router, data):
                     parse_mode='Markdown'
                 )
         except Exception as e:
-            await callback_query.message.answer(f"⚠️ Ошибка при получении данных: {str(e)}")
+            await callback_query.message.answer(f"⚠️ Ошибка при получении данных!")
 
     @router.message()
     async def unknown_message(message: Message):
         await message.answer(
-            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start или /class.",
+            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset.",
             parse_mode='Markdown'
         )
