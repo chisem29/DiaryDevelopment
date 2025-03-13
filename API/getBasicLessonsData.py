@@ -1,8 +1,8 @@
 import pandas as pd
 
-def getBasicLessonsData() -> pd.DataFrame :
+def getBasicLessonsData(name : str) -> pd.DataFrame :
 
-    data = pd.read_excel('API/data/data.xlsx')
+    data = pd.read_excel(f'API/data/{name}.xlsx')
 
     basicColumns = data.columns.tolist()[1::8]
 
@@ -10,6 +10,6 @@ def getBasicLessonsData() -> pd.DataFrame :
 
     data.drop(0, inplace=True)
 
-    data.set_index('Класс', inplace=True)
+    data.set_index(data.columns.tolist()[0], inplace=True)
 
     return data

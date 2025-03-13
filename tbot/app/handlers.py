@@ -3,16 +3,24 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 
-from app.keyboards import Keyboard
-from app.states import Form
-from app.services import create_db, get_user_data, save_user_data, delete_user_data
+from app.keyboards import ClassKB, StartKB,TeacherKB
+from app.states import Form, TeacherForm
+from app.services import (
+    create_db, 
+    get_user_data, 
+    save_user_data, 
+    delete_user_data
+)
 
 from getLessonsDataByClassWeekday import getLessonsDataByClassWeekday as GLDBCW
+from tableData import classTable, teacherTable
 
-def setup_handlers(router: Router, data):
+def setup_handlers(router: Router):
     
     create_db()
-    kb = Keyboard(data)
+    classKB = ClassKB(classTable)
+    startKB = StartKB()
+    teacherKB = TeacherKB(teacherTable)
 
     @router.message(Command('start'))
     async def cmd_start(message: Message, state: FSMContext):
@@ -22,14 +30,14 @@ def setup_handlers(router: Router, data):
             
             if user_data:
                 class_number, class_char = user_data
-                weekdays_keyboard = await kb.inline_weekdays()
+                weekdays_keyboard = await classKB.inline_weekdays()
                 await message.answer(
                     f"👋 Привет, вы уже выбрали класс: {class_number}{class_char.upper()}. Пожалуйста, выберите день недели:",
                     reply_markup=weekdays_keyboard
                 )
                 await state.set_state(Form.select_weekday)
             else:
-                start_keyboard = await kb.start_button()
+                start_keyboard = await startKB.start_button()
                 await message.answer(
                     f"👋 Привет, {message.from_user.first_name}! Чтобы начать, нажмите на кнопку ниже.",
                     reply_markup=start_keyboard
@@ -38,7 +46,7 @@ def setup_handlers(router: Router, data):
             await message.answer(f"⚠️ Ошибка при обработке команды! ")
 
     @router.message(Command('class'))
-    async def cmd_class(message: Message, state: FSMContext):
+    async def cmd_class(message: Message):
         try:
             class_number, class_char = get_user_data(message.from_user.id)
             await message.answer(
@@ -54,7 +62,7 @@ def setup_handlers(router: Router, data):
             delete_user_data(message.from_user.id)
             await message.answer(
                 "🔄 Ваши данные были сброшены. Пожалуйста, выберите класс снова.",
-                reply_markup=await kb.inline_number_classes()
+                reply_markup=await classKB.inline_number_classes()
             )
         except Exception as e:
             await message.answer(f"⚠️ Ошибка при сбросе данных!")
@@ -62,7 +70,7 @@ def setup_handlers(router: Router, data):
     @router.callback_query(lambda c: c.data == "start_button")
     async def on_start_button_click(callback_query: CallbackQuery, state: FSMContext):
         try:
-            classes_number_keyboard = await kb.inline_number_classes()
+            classes_number_keyboard = await classKB.inline_number_classes()
             await callback_query.message.answer(
                 "🔢 Пожалуйста, выберите ваш класс:", 
                 reply_markup=classes_number_keyboard
@@ -75,7 +83,7 @@ def setup_handlers(router: Router, data):
         try:
             selected_class_number = callback_query.data.split('_')[2]
             await state.update_data(selected_class_number=selected_class_number)
-            class_char_keyboard = await kb.inline_char_classes(selected_class_number)
+            class_char_keyboard = await classKB.inline_char_classes(selected_class_number)
             await callback_query.message.answer(
                 f"🎒 Вы выбрали класс: {selected_class_number}. Пожалуйста, выберите букву класса:", 
                 reply_markup=class_char_keyboard
@@ -96,7 +104,7 @@ def setup_handlers(router: Router, data):
 
             await state.clear()
 
-            weekdays_keyboard = await kb.inline_weekdays()
+            weekdays_keyboard = await classKB.inline_weekdays()
             await callback_query.message.answer(
                 f"📅 Вы выбрали букву класса: {selected_class_char.upper()}. Пожалуйста, выберите день недели:", 
                 reply_markup=weekdays_keyboard
@@ -112,7 +120,6 @@ def setup_handlers(router: Router, data):
             await state.update_data(selected_weekday=selected_weekday)
 
             state_data = await state.get_data()
-            
             user_data = get_user_data(callback_query.from_user.id)
 
             class_number, class_char = user_data
@@ -126,12 +133,15 @@ def setup_handlers(router: Router, data):
                 )
                 return
 
-            selected_data = GLDBCW(data, f'{class_number}{class_char}', weekday)
+            selected_data = GLDBCW(classTable, f'{class_number}{class_char}', weekday)
 
             if len(selected_data) > 0:
                 formatted_schedule = f"🎓 *Ваше расписание на {weekday.capitalize()}*:\n\n"
                 for i, row in enumerate(selected_data):
-                    formatted_schedule += f"**{i + 1}.** _{row[0].capitalize()}_ — **{str(row[1]).replace('nan', 'нет информации')}**\n"
+                    
+                    subj = row.replace(';', '; ').replace(',', '  ->  ').capitalize()
+
+                    formatted_schedule += f"**{i + 1}.** _{subj}_**\n"
 
                 await callback_query.message.answer(formatted_schedule, parse_mode='Markdown')
             else:
@@ -142,9 +152,59 @@ def setup_handlers(router: Router, data):
         except Exception as e:
             await callback_query.message.answer(f"⚠️ Ошибка при получении данных!")
 
+    @router.message(Command('teacher')) 
+    async def start_fio_teacher(message: Message, state: FSMContext):
+        teacher_fio_keyboard = await teacherKB.inline_fio_teacher()
+
+        await message.answer(
+            f"Выбери учителя ниже из списка",
+            reply_markup=teacher_fio_keyboard
+        )
+    
+    @router.callback_query(lambda c: c.data.startswith('fio_teacher_'))
+    async def process_fio_teacher_selection(callback_query: CallbackQuery, state: FSMContext):
+        try:
+            selected_fio_teacher = callback_query.data.split('_')[2]
+            await state.update_data(selected_fio_teacher=selected_fio_teacher)
+
+            weekdays_keyboard = await teacherKB.inline_weekdays_teacher()
+            await callback_query.message.answer(
+                f"📅 ФИО учителя : {selected_fio_teacher}. Пожалуйста, выберите день недели:", 
+                reply_markup=weekdays_keyboard
+            )
+            await state.set_state(TeacherForm.select_weekday)
+        except Exception as e:
+            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса: Нет такого учителя!")
+
+    @router.callback_query(lambda c: c.data.startswith('teacher_weekday_'))
+    async def process_teacher_weekday_selection(callback_query: CallbackQuery, state: FSMContext):
+        try:
+            selected_weekday = callback_query.data.split('_')[2]
+            await state.update_data(selected_weekday=selected_weekday)
+            state_data = await state.get_data()
+
+            weekday = state_data.get('selected_weekday')
+            fio_teacher = state_data.get('selected_fio_teacher')
+
+            selected_data = GLDBCW(teacherTable, fio_teacher, weekday)
+
+            if len(selected_data) > 0:
+                formatted_schedule = f"🎓 *Кабинеты учителя на {weekday.capitalize()}*:\n\n"
+                for i, row in enumerate(selected_data):
+                    
+                    formatted_schedule += f"**{i + 1}.** _{row}_**\n".replace('nan', '*-*')
+
+                await callback_query.message.answer(formatted_schedule, parse_mode='Markdown')
+            else:
+                await callback_query.message.answer(
+                    f"😔 В этот день у учителя нет уроков. Попробуйте выбрать другой день.",
+                    parse_mode='Markdown')
+        except Exception as e:
+            await callback_query.message.answer(f"⚠️ Ошибка при получении данных!")
+
     @router.message()
     async def unknown_message(message: Message):
         await message.answer(
-            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset.",
+            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset. /teacher",
             parse_mode='Markdown'
         )

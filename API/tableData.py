@@ -1,3 +1,5 @@
-from getBasicLessonsData import getBasicLessonsData as GBLD
+from getOptimLessons import getOptimLessonsData as GBLD
 
-DATA = GBLD() # Наши результирующие данные!!!! Отсюда импорт!!!!!!!!!!!
+classTable = GBLD('result').set_index('Класс')
+
+teacherTable = GBLD('teachersRes').set_index('Учитель')
