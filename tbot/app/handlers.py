@@ -192,7 +192,7 @@ def setup_handlers(router: Router):
                 formatted_schedule = f"🎓 *Кабинеты учителя на {weekday.capitalize()}*:\n\n"
                 for i, row in enumerate(selected_data):
                     
-                    formatted_schedule += f"**{i + 1}.** _{row}_**\n".replace('nan', '*-*')
+                    formatted_schedule += f"**{i + 1}.** _{row}_**\n".replace('nan', '**-**')
 
                 await callback_query.message.answer(formatted_schedule, parse_mode='Markdown')
             else:
@@ -205,6 +205,6 @@ def setup_handlers(router: Router):
     @router.message()
     async def unknown_message(message: Message):
         await message.answer(
-            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset. /teacher",
+            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset, /teacher",
             parse_mode='Markdown'
         )
