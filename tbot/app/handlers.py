@@ -262,6 +262,6 @@ def setup_handlers(router: Router):
     @router.message()
     async def unknown_message(message: Message):
         await message.answer(
-            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset, /teacher, /freeclass (/freeclass в процессе в связи с оценкой)",
+            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset, /teacher, /freeclass",
             parse_mode='Markdown'
         )
