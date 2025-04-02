@@ -3,7 +3,10 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 
-from app.keyboards import ClassKB, StartKB,TeacherKB
+from tbot.app.keyboards.classKeyBoard import ClassKB
+from tbot.app.keyboards.startKeyBoard import StartKB
+from tbot.app.keyboards.teacherKeyBoard import TeacherKB
+
 from app.states import Form, TeacherForm
 from app.services import (
     create_db, 
@@ -192,9 +195,9 @@ def setup_handlers(router: Router):
                 formatted_schedule = f"🎓 *Кабинеты учителя на {weekday.capitalize()}*:\n\n"
                 for i, row in enumerate(selected_data):
                     
-                    formatted_schedule += f"**{i + 1}.** _{row}_**\n".replace('nan', '**-**')
+                    formatted_schedule += f"<b>{i + 1}.</b> <i>{row.replace('nan', '-')}</i><br>"
 
-                await callback_query.message.answer(formatted_schedule, parse_mode='Markdown')
+                await callback_query.message.answer(formatted_schedule)
             else:
                 await callback_query.message.answer(
                     f"😔 В этот день у учителя нет уроков. Попробуйте выбрать другой день.",
