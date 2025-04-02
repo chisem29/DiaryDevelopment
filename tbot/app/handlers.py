@@ -6,8 +6,9 @@ from aiogram.filters import Command
 from app.keyboards.classKeyBoard import ClassKB
 from app.keyboards.startKeyBoard import StartKB
 from app.keyboards.teacherKeyBoard import TeacherKB
+from app.keyboards.freeClassesKeyBoard import FreeClassesKB
 
-from app.states import Form, TeacherForm
+from app.states import Form, TeacherForm, FreeClass
 from app.services import (
     create_db, 
     get_user_data, 
@@ -16,14 +17,16 @@ from app.services import (
 )
 
 from getLessonsDataByClassWeekday import getLessonsDataByClassWeekday as GLDBCW
-from tableData import classTable, teacherTable
+from getFreeClassesData import getFreeClassesData as GFCD
+from tableData import classTable, teacherTable, classRoomsTable
 
 def setup_handlers(router: Router):
     
     create_db()
-    classKB = ClassKB(classTable)
     startKB = StartKB()
+    classKB = ClassKB(classTable)
     teacherKB = TeacherKB(teacherTable)
+    freeClassesKB = FreeClassesKB(classRoomsTable)
 
     @router.message(Command('start'))
     async def cmd_start(message: Message, state: FSMContext):
@@ -185,7 +188,6 @@ def setup_handlers(router: Router):
             selected_weekday = callback_query.data.split('_')[2]
             await state.update_data(selected_weekday=selected_weekday)
             state_data = await state.get_data()
-
             weekday = state_data.get('selected_weekday')
             fio_teacher = state_data.get('selected_fio_teacher')
 
@@ -194,8 +196,7 @@ def setup_handlers(router: Router):
             if len(selected_data) > 0:
                 formatted_schedule = f"🎓 *Кабинеты учителя на {weekday.capitalize()}*:\n\n"
                 for i, row in enumerate(selected_data):
-                    
-                    formatted_schedule += f"**{i + 1}.**      *{row.replace('nan', '-')}*\n"
+                    formatted_schedule += f"**{i + 1}.**       _{str(int(str(row).replace('nan', '-1'))).replace('-1', '-')}_\n"
 
                 await callback_query.message.answer(formatted_schedule, parse_mode='Markdown')
             else:
@@ -205,9 +206,62 @@ def setup_handlers(router: Router):
         except Exception as e:
             await callback_query.message.answer(f"⚠️ Ошибка при получении данных!")
 
+    @router.message(Command('freeclass'))
+    async def start_free_class(message: Message, state: FSMContext):
+        free_classes_keyboard = await freeClassesKB.inline_weekdays_subject()
+        
+        await message.answer(
+            f"📅Выберите день недели ниже из списка",
+            reply_markup=free_classes_keyboard
+        )
+        
+        await state.set_state(FreeClass.select_weekday)
+
+    @router.callback_query(lambda c: c.data.startswith('subject_weekday_'))
+    async def process_subject_weekday_selection(callback_query: CallbackQuery, state: FSMContext):
+        try:
+            selected_subject_weekday = callback_query.data.split('_')[2]
+            await state.update_data(selected_subject_weekday=selected_subject_weekday)
+            
+            weekdays_keyboard = await freeClassesKB.inline_subject_num()
+            await callback_query.message.answer(
+                f"🔢День недели: {selected_subject_weekday}. Пожалуйста, выберите номер урока ниже из списка:", 
+                reply_markup=weekdays_keyboard
+            )
+            
+            await state.set_state(FreeClass.select_subject_num)
+        except Exception as e:
+            await callback_query.message.answer(f"⚠️ Ошибка при обработке запроса!")
+
+    @router.callback_query(lambda c: c.data.startswith('subject_num_'))
+    async def process_subject_num_selection(callback_query: CallbackQuery, state: FSMContext):
+        try:
+            selected_num = callback_query.data.split('_')[2]
+            await state.update_data(selected_num=selected_num)
+            
+            state_data = await state.get_data()
+            weekday = state_data.get('selected_subject_weekday')
+            subject_num = state_data.get('selected_num')
+
+            selected_data = GFCD(classRoomsTable, weekday, subject_num)
+
+            if len(selected_data) > 0:
+                formatted_schedule = f"🎓 *Список свободных кабинетов на {subject_num}-й № урока*:\n\n"
+                for i, row in enumerate(selected_data):
+                    formatted_schedule += f"**{i + 1}.** *{str(row)}* "
+                    if (i + 1) % 5 == 0:
+                        formatted_schedule += "\n"
+                await callback_query.message.answer(formatted_schedule, parse_mode='Markdown')
+            else:
+                await callback_query.message.answer(
+                    f"😔 В этот день нет свободных кабинетов на текущий урок. Попробуйте выбрать другой день.",
+                    parse_mode='Markdown')
+        except Exception as e:
+            await callback_query.message.answer(f"⚠️ Ошибка при получении данных")
+
     @router.message()
     async def unknown_message(message: Message):
         await message.answer(
-            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset, /teacher",
+            "🚫 Ой! Пожалуйста, используйте команду из списка доступных команд, например, /start, /class, /reset, /teacher, /freeclass (/freeclass в процессе в связи с оценкой)",
             parse_mode='Markdown'
         )

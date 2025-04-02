@@ -8,3 +8,7 @@ class Form(StatesGroup):
 class TeacherForm(StatesGroup):
     select_fio= State()
     select_weekday = State()
+
+class FreeClass(StatesGroup):
+    select_weekday = State()
+    select_subject_num= State()
