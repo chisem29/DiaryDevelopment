@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
-
+from aiogram.enums import ParseMode
 from app.keyboards.classKeyBoard import ClassKB
 from app.keyboards.startKeyBoard import StartKB
 from app.keyboards.teacherKeyBoard import TeacherKB
@@ -195,9 +195,9 @@ def setup_handlers(router: Router):
                 formatted_schedule = f"🎓 *Кабинеты учителя на {weekday.capitalize()}*:\n\n"
                 for i, row in enumerate(selected_data):
                     
-                    formatted_schedule += f"<b>{i + 1}.</b> <i>{row.replace('nan', '-')}</i><br>"
+                    formatted_schedule += f"<b>{i + 1}.</b> &nbsp;&nbsp;&nbsp;&nbsp; <i>{row.replace('nan', '-')}</i><br>"
 
-                await callback_query.message.answer(formatted_schedule)
+                await callback_query.message.answer(formatted_schedule, parse_mode=ParseMode.HTML)
             else:
                 await callback_query.message.answer(
                     f"😔 В этот день у учителя нет уроков. Попробуйте выбрать другой день.",
