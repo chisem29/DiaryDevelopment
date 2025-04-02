@@ -1,6 +1,5 @@
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-import pandas as pd
 
 class TeacherKB:
     def __init__(self, data):
@@ -21,4 +20,3 @@ class TeacherKB:
             keyboard.add(InlineKeyboardButton(text=weekday, callback_data=f'teacher_weekday_{weekday}'))
         return keyboard.adjust(2).as_markup()
     
-print(pd.Series([1, 2, 3, 4], index=['А', 'В', 'Г', 'Б']).index.sort_values().tolist())
