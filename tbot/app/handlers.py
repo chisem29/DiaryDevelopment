@@ -3,9 +3,9 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 
-from tbot.app.keyboards.classKeyBoard import ClassKB
-from tbot.app.keyboards.startKeyBoard import StartKB
-from tbot.app.keyboards.teacherKeyBoard import TeacherKB
+from app.keyboards.classKeyBoard import ClassKB
+from app.keyboards.startKeyBoard import StartKB
+from app.keyboards.teacherKeyBoard import TeacherKB
 
 from app.states import Form, TeacherForm
 from app.services import (
